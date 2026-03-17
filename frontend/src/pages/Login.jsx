@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import { Link } from "react-router-dom";
 export default function Login() {
   const navigate = useNavigate();
 
@@ -82,15 +82,11 @@ export default function Login() {
 
         {/* Extra */}
         <p className="text-gray-400 text-sm mt-4 text-center">
-          Don’t have an account?{" "}
-          <span
-            className="text-blue-400 cursor-pointer"
-            onClick={() => navigate("/register")}
-          >
-            Sign up
-          </span>
-          
-        </p>
+  Don’t have an account?{" "}
+  <Link to="/register" className="text-blue-400 hover:underline">
+    Register
+  </Link>
+</p>
       </form>
 
     </div>

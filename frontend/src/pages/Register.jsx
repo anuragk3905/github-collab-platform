@@ -1,115 +1,116 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import API from "../services/api";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({
-    username: "",
-    email: "",
-    password: ""
-  });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
 
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const onSubmit = (data) => {
+    // ✅ SUCCESS ONLY
+    toast.success("Account created successfully!");
 
-  // 🔥 handle input change
-  const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    // redirect to login
+    navigate("/");
   };
 
-  // 🔥 handle submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!user.username || !user.email || !user.password) {
-      setError("All fields are required");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const res = await API.post("/users/register", user);
-
-      console.log(res.data);
-
-      alert("Account created successfully ✅");
-
-      // 🔥 redirect to login
-      navigate("/login");
-
-    } catch (err) {
-      console.log(err);
-      setError("Registration failed ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const password = watch("password");
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#0d1117] text-white">
       
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="bg-[#161b22] p-8 rounded-lg w-96 border border-gray-700"
       >
         <h2 className="text-2xl font-bold mb-6 text-center">
           Create Account
         </h2>
 
-        {/* Error */}
-        {error && (
-          <p className="text-red-500 mb-3 text-sm">{error}</p>
-        )}
-
         {/* Username */}
+        <label className="text-gray-400 text-sm">Username</label>
         <input
           type="text"
-          name="username"
-          placeholder="Username"
-          value={user.username}
-          onChange={handleChange}
-          className="w-full mb-3 p-2 bg-[#0d1117] border border-gray-600 rounded"
+          {...register("username", {
+            required: "Username is required",
+          })}
+          className="w-full mt-1 mb-1 p-2 bg-[#0d1117] border border-gray-600 rounded"
         />
+        {errors.username && (
+          <p className="text-red-500 text-sm mb-2">
+            {errors.username.message}
+          </p>
+        )}
 
         {/* Email */}
+        <label className="text-gray-400 text-sm">Email</label>
         <input
           type="email"
-          name="email"
-          placeholder="Email"
-          value={user.email}
-          onChange={handleChange}
-          className="w-full mb-3 p-2 bg-[#0d1117] border border-gray-600 rounded"
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Invalid email format",
+            },
+          })}
+          className="w-full mt-1 mb-1 p-2 bg-[#0d1117] border border-gray-600 rounded"
         />
+        {errors.email && (
+          <p className="text-red-500 text-sm mb-2">
+            {errors.email.message}
+          </p>
+        )}
 
         {/* Password */}
+        <label className="text-gray-400 text-sm">Password</label>
         <input
           type="password"
-          name="password"
-          placeholder="Password"
-          value={user.password}
-          onChange={handleChange}
-          className="w-full mb-4 p-2 bg-[#0d1117] border border-gray-600 rounded"
+          {...register("password", {
+            required: "Password is required",
+            minLength: {
+              value: 6,
+              message: "Minimum 6 characters required",
+            },
+          })}
+          className="w-full mt-1 mb-1 p-2 bg-[#0d1117] border border-gray-600 rounded"
         />
+        {errors.password && (
+          <p className="text-red-500 text-sm mb-2">
+            {errors.password.message}
+          </p>
+        )}
+
+        {/* Confirm Password */}
+        <label className="text-gray-400 text-sm">Confirm Password</label>
+        <input
+          type="password"
+          {...register("confirmPassword", {
+            required: "Please confirm your password",
+            validate: (value) =>
+              value === password || "Passwords do not match",
+          })}
+          className="w-full mt-1 mb-1 p-2 bg-[#0d1117] border border-gray-600 rounded"
+        />
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mb-3">
+            {errors.confirmPassword.message}
+          </p>
+        )}
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 py-2 rounded hover:bg-green-700"
+          className="w-full bg-green-600 py-2 rounded hover:bg-green-700 mt-2"
         >
-          {loading ? "Creating..." : "Register"}
+          Register
         </button>
-
-        {/* Link to login */}
-        <p className="text-gray-400 text-sm mt-4 text-center">
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-400">
-            Login
-          </Link>
-        </p>
 
       </form>
     </div>
