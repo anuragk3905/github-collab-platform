@@ -52,13 +52,13 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/repos/69b8edb999197e22f0630f04
+GET http://localhost:3000/repos/69b9083939f8f11a6c8cd7dc
 
 ###
 DELETE http://localhost:3000/repos/69b8edb999197e22f0630f04
 
 ###
-POST http://localhost:3000/repos/69b8ee2999197e22f0630f0c/issues
+POST http://localhost:3000/repos/69b9083939f8f11a6c8cd7dc/issues
 Content-Type: application/json
 
 {
@@ -70,7 +70,7 @@ Content-Type: application/json
 GET http://localhost:3000/repos/69b8ee2999197e22f0630f0c/issues
 
 ###
-POST http://localhost:3000/issues/69b8ef9a4d4ec09bd33d6d58/comments
+POST http://localhost:3000/issues/69b9088a39f8f11a6c8cd7eb/comments
 Content-Type: application/json
 
 {
