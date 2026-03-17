@@ -1,0 +1,46 @@
+###health check
+GET http://localhost:3000/
+
+
+###register user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "username":"tom",
+    "email":"tom@gmail.com",
+    "password":"Zoro123"
+}
+
+
+###authenticate user
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email":"tom@gmail.com",
+    "password":"Zoro123"
+}
+
+
+###read profile (after login cookie)
+GET http://localhost:3000/auth/profile
+
+
+###read profile with manual cookie
+GET http://localhost:3000/auth/profile
+Cookie: token=REPLACE_WITH_LOGIN_TOKEN
+
+
+###register duplicate user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "username":"tom1",
+    "email":"tom1@gmail.com",
+    "password":"Zoro1234"
+}
+
+
+
