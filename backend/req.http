@@ -42,5 +42,43 @@ Content-Type: application/json
     "password":"Zoro1234"
 }
 
+###
+POST http://localhost:3000/repos
+Content-Type: application/json
 
+{
+  "name": "test-repo",
+  "description": "my repo"
+}
 
+###
+GET http://localhost:3000/repos/69b8edb999197e22f0630f04
+
+###
+DELETE http://localhost:3000/repos/69b8edb999197e22f0630f04
+
+###
+POST http://localhost:3000/repos/69b8ee2999197e22f0630f0c/issues
+Content-Type: application/json
+
+{
+  "title": "Bug found",
+  "description": "Something is wrong"
+}
+
+###
+GET http://localhost:3000/repos/69b8ee2999197e22f0630f0c/issues
+
+###
+POST http://localhost:3000/issues/69b8ef9a4d4ec09bd33d6d58/comments
+Content-Type: application/json
+
+{
+  "text": "I will fix this"
+}
+
+###
+GET http://localhost:3000/issues/69b8ef9a4d4ec09bd33d6d58/comments
+
+###
+PUT http://localhost:3000/issues/69b8ef9a4d4ec09bd33d6d58/close

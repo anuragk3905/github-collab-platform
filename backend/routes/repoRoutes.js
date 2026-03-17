@@ -6,11 +6,16 @@ import {
   deleteRepo,
 } from "../controllers/repoController.js";
 
+import authMiddleware from "../middleware/authMiddleware.js"; // ✅ ADD THIS
+
 const router = express.Router();
 
-router.post("/", createRepo);
+// 🔒 Protected routes
+router.post("/", authMiddleware, createRepo);
+router.delete("/:id", authMiddleware, deleteRepo);
+
+// 🌍 Public routes
 router.get("/", getAllRepos);
 router.get("/:id", getRepoById);
-router.delete("/:id", deleteRepo); // ✅ NEW
 
 export default router;

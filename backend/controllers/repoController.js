@@ -10,15 +10,14 @@ export const createRepo = async (req, res) => {
 
     const repo = await Repository.create({
       name,
-      owner: "65f000000000000000000000",
+      owner: req.user.id,
       collaborators: [
         {
-          userId: "65f000000000000000000000",
+          userId: req.user.id,
           role: "owner",
         },
       ],
     });
-
     res.status(201).json(repo);
   } catch (error) {
     console.error(error); // 👈 IMPORTANT (check terminal)
@@ -64,8 +63,8 @@ export const deleteRepo = async (req, res) => {
       return res.status(404).json({ message: "Repository not found" });
     }
 
-    // TEMP: since no auth yet, use same dummy ID
-    const userId = "65f000000000000000000000";
+  
+    const userId = req.user.id;
 
     // Check if user is owner
     if (repo.owner.toString() !== userId) {

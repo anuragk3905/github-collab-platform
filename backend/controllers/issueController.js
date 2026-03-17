@@ -21,7 +21,7 @@ export const createIssue = async (req, res) => {
       title,
       description,
       repoId: id,
-      createdBy: "65f000000000000000000000", // temp user
+      createdBy: req.user.id, // temp user
     });
 
     res.status(201).json(issue);
@@ -67,7 +67,7 @@ export const addComment = async (req, res) => {
 
     const comment = await Comment.create({
       issueId: id,
-      userId: "65f000000000000000000000", // temp user
+      userId: req.user.id, // temp user
       text,
     });
 
@@ -107,8 +107,12 @@ export const closeIssue = async (req, res) => {
       return res.status(404).json({ message: "Issue not found" });
     }
 
-    issue.status = "closed";
+    // 🔒 Only creator can close
+    if (issue.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
 
+    issue.status = "closed";
     await issue.save();
 
     res.status(200).json({

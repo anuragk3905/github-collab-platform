@@ -7,15 +7,17 @@ import {
   closeIssue,
 } from "../controllers/issueController.js";
 
+import authMiddleware from "../middleware/authMiddleware.js"; // ✅ ADD THIS
+
 const router = express.Router();
 
-router.post("/repos/:id/issues", createIssue);
+// 🔒 Protected routes
+router.post("/repos/:id/issues", authMiddleware, createIssue);
+router.post("/issues/:id/comments", authMiddleware, addComment);
+router.put("/issues/:id/close", authMiddleware, closeIssue);
+
+// 🌍 Public routes
 router.get("/repos/:id/issues", getIssuesByRepo);
-
-router.post("/issues/:id/comments", addComment);
 router.get("/issues/:id/comments", getCommentsByIssue);
-
-// Close issue
-router.put("/issues/:id/close", closeIssue); // ✅ NEW
 
 export default router;
