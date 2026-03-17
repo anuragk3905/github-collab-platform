@@ -8,9 +8,9 @@ import authRoutes from "./routes/authRoutes.js";
 import repoRoutes from "./routes/repoRoutes.js";
 import issueRoutes from "./routes/issueRoutes.js";
 
-import gitRoutes from "./routes/gitRoutes.js";
-import prRoutes from "./routes/prRoutes.js";
-import reviewRoutes from "./routes/reviewRoutes.js";
+import { initSocket } from "./config/socket.js";
+import activityRoutes from "./routes/activityRoute.js";
+import notificationRoutes from "./routes/notificationRoute.js";
 
 dotenv.config();
 connectDB();
@@ -33,10 +33,8 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/repos", repoRoutes);
 app.use("/", issueRoutes);
-app.use("/api/git", gitRoutes);
-app.use("/api/pr", prRoutes);
-app.use("/api/reviews", reviewRoutes);
-
+app.use("/api", activityRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ✅ Test route
 app.get("/", (req, res) => {
