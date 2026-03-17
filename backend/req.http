@@ -1,0 +1,17 @@
+GET http://localhost:3000/
+
+###get activity
+
+GET http://localhost:3000/api/repos/69b9083939f8f11a6c8cd7dc/activity
+### get notifications
+GET http://localhost:3000/api/notifications?userId=67d6c4bfb1a2d4a321abc999
+
+###mark notifications as read
+###
+PATCH http://localhost:3000/api/notifications/69b8e81507e1b4330b733322/read
+Content-Type: application/json
+
+{
+  "userId": "67d6c4bfb1a2d4a321abc999"
+}
+
