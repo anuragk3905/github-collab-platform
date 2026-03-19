@@ -136,26 +136,24 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ Server
-const DEFAULT_PORT = Number(process.env.PORT) || 3000;
-let currentPort = DEFAULT_PORT;
+// ✅ Server (strict port 3000 only)
+const PORT = Number(process.env.PORT) || 3000;
 
 const onServerStart = () => {
-  console.log(`Server running on port ${currentPort} in ${NODE_ENV} mode`);
-};
-
-const onServerError = (error) => {
-  if (error.code === "EADDRINUSE") {
-    console.warn(`Port ${currentPort} in use, trying ${currentPort + 1}...`);
-    currentPort += 1;
-    server.listen(currentPort);
-  } else {
-    console.error("Server failed:", error);
-    process.exit(1);
-  }
+  console.log(`Server running on port ${PORT} in ${NODE_ENV} mode`);
 };
 
 initSocket(server);
 
-server.on("error", onServerError);
-server.listen(currentPort, onServerStart);
+server.listen(PORT, onServerStart);
+
+// If port is already in use, fail fast (no auto-increment)
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${PORT} is already in use. Close the process and restart`);
+    process.exit(1);
+  } else {
+    console.error("Server failed:", error);
+    process.exit(1);
+  }
+});
