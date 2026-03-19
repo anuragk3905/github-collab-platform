@@ -1,8 +1,11 @@
 import ReviewComment from "../models/ReviewComment.js";
 
-export const addComment = async (data) => {
+export const addComment = async (data, userId) => {
 
-  const comment = new ReviewComment(data);
+  const comment = new ReviewComment({
+    ...data,
+    userId,
+  });
 
   await comment.save();
 

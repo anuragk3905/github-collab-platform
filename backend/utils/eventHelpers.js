@@ -46,3 +46,52 @@ export const emitUserNotification = (userId, payload) => {
     io.to(socketId).emit("notification", payload);
   }
 };
+
+export const getRepoMemberUserIds = (repo) => {
+  const ids = new Set();
+
+  if (!repo) return [];
+
+  if (repo.owner) ids.add(String(repo.owner));
+
+  if (Array.isArray(repo.collaborators)) {
+    for (const c of repo.collaborators) {
+      if (c?.userId) ids.add(String(c.userId));
+    }
+  }
+
+  return [...ids];
+};
+
+export const notifyRepoMembers = async ({
+  repo,
+  excludeUserId,
+  type,
+  message,
+  payload,
+  repoId,
+}) => {
+  const members = getRepoMemberUserIds(repo);
+  const recipients = members.filter((id) => id !== String(excludeUserId));
+
+  const effectiveRepoId = repoId || repo?._id || null;
+
+  // Create notifications in DB
+  const notifications = await Promise.all(
+    recipients.map((userId) =>
+      createNotification({
+        userId,
+        message,
+        type,
+        repoId: effectiveRepoId,
+      })
+    )
+  );
+
+  // Notify online users via socket
+  recipients.forEach((userId, idx) => {
+    emitUserNotification(userId, payload || { type, message, notification: notifications[idx] });
+  });
+
+  return notifications;
+};

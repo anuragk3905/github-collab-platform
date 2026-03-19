@@ -14,6 +14,9 @@ const commentSchema = new mongoose.Schema(
     text: {
       type: String,
       required: true,
+      trim: true,
+      minlength: [1, "Comment cannot be empty"],
+      maxlength: [2000, "Comment is too long"],
     },
   },
   { timestamps: true }

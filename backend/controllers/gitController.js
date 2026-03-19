@@ -1,4 +1,6 @@
 import * as gitService from "../services/gitService.js";
+import simpleGit from "simple-git";
+import { logActivity, notifyRepoMembers } from "../utils/eventHelpers.js";
 
 export const createRepo = async (req, res) => {
 
@@ -14,6 +16,26 @@ export const commit = async (req, res) => {
   const { repoName, message } = req.body;
 
   const result = await gitService.commitFiles(repoName, message);
+
+  const repo = req.repo;
+  if (repo) {
+    await logActivity({
+      repoId: repo._id,
+      userId: req.user.id,
+      eventType: "commit_pushed",
+      message: `Commit pushed to ${repo.name}`,
+      metadata: { commit: result?.commit || null },
+    });
+
+    await notifyRepoMembers({
+      repo,
+      excludeUserId: req.user.id,
+      type: "commit_pushed",
+      message: `New commit pushed in ${repo.name}`,
+      payload: { type: "commit_pushed", message: `New commit in ${repo.name}` },
+      repoId: repo._id,
+    });
+  }
 
   res.json(result);
 };
@@ -33,6 +55,17 @@ export const createBranch = async (req, res) => {
 
   const result = await gitService.createBranch(repoName, branchName);
 
+  const repo = req.repo;
+  if (repo) {
+    await logActivity({
+      repoId: repo._id,
+      userId: req.user.id,
+      eventType: "branch_created",
+      message: `Branch created`,
+      metadata: { branchName },
+    });
+  }
+
   res.json(result);
 };
 
@@ -50,6 +83,17 @@ export const mergeBranch = async (req, res) => {
   const { repoName, branchName } = req.body;
 
   const result = await gitService.mergeBranch(repoName, branchName);
+
+  const repo = req.repo;
+  if (repo) {
+    await logActivity({
+      repoId: repo._id,
+      userId: req.user.id,
+      eventType: "commit_pushed",
+      message: `Branches merged`,
+      metadata: { mergedBranch: branchName },
+    });
+  }
 
   res.json(result);
 };

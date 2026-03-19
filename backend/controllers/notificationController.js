@@ -3,12 +3,13 @@ import Notification from "../models/NotificationModel.js";
 
 export const getMyNotifications = async (req, res) => {
   try {
-    const { userId, isRead } = req.query;
+    const { isRead } = req.query;
+    const userId = req.user.id;
 
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
-        message: "Valid userId is required in query",
+        message: "Invalid authenticated user",
       });
     }
 
@@ -39,7 +40,7 @@ export const getMyNotifications = async (req, res) => {
 export const markNotificationRead = async (req, res) => {
   try {
     const { notificationId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user.id;
 
     if (!mongoose.Types.ObjectId.isValid(notificationId)) {
       return res.status(400).json({
@@ -48,10 +49,10 @@ export const markNotificationRead = async (req, res) => {
       });
     }
 
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
-        message: "Valid userId is required in body",
+        message: "Invalid authenticated user",
       });
     }
 

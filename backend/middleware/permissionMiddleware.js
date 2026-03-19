@@ -1,7 +1,11 @@
-const permissionMiddleware = (requiredRole) => {
+const permissionMiddleware = (requiredRole = "viewer") => {
   return (req, res, next) => {
-    const repo = req.repo; // set by Person B
+    const repo = req.repo;
     const userId = req.user.id;
+
+    if (!repo) {
+      return res.status(500).json({ message: "Repository context not set" });
+    }
 
     let role = null;
 
@@ -14,11 +18,17 @@ const permissionMiddleware = (requiredRole) => {
       role = collaborator ? collaborator.role : null;
     }
 
-    if (!role)
+    if (!role) {
       return res.status(403).json({ message: "Access denied" });
+    }
 
+    // Role hierarchy: owner > collaborator > viewer
     if (requiredRole === "owner" && role !== "owner") {
       return res.status(403).json({ message: "Only owner allowed" });
+    }
+
+    if (requiredRole === "collaborator" && role === "viewer") {
+      return res.status(403).json({ message: "Only collaborators or owner allowed" });
     }
 
     next();

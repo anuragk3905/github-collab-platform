@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const reviewCommentSchema = new mongoose.Schema({
 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
   prId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "PullRequest",
@@ -10,9 +16,17 @@ const reviewCommentSchema = new mongoose.Schema({
 
   filePath: String,
 
-  lineNumber: Number,
+  lineNumber: {
+    type: Number,
+    min: [1, "lineNumber must be >= 1"],
+  },
 
-  comment: String,
+  comment: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: [1, "Comment cannot be empty"],
+  },
 
   createdAt: {
     type: Date,

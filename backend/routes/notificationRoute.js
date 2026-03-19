@@ -3,10 +3,12 @@ import {
   getMyNotifications,
   markNotificationRead,
 } from "../controllers/notificationController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getMyNotifications);
-router.patch("/:notificationId/read", markNotificationRead);
+// All notification routes require authentication
+router.get("/", authMiddleware, getMyNotifications);
+router.patch("/:notificationId/read", authMiddleware, markNotificationRead);
 
 export default router;
