@@ -5,9 +5,43 @@ import path from "path";
 
 const baseRepoPath = path.resolve("repos");
 
-export const initRepository = async (repoName) => {
+const assertSafeRepoName = (repoName) => {
+  const name = typeof repoName === "string" ? repoName.trim() : "";
+  if (!name) throw new Error("repoName is required");
+  // Allow only safe characters to prevent path traversal
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
+    throw new Error("Invalid repoName. Use only letters, numbers, . _ -");
+  }
+  return name;
+};
 
-  const repoPath = path.join(baseRepoPath, repoName);
+const getRepoPath = (repoName, ensureExists = true) => {
+  const safeRepoName = assertSafeRepoName(repoName);
+  const repoPath = path.join(baseRepoPath, safeRepoName);
+
+  if (ensureExists && !fs.existsSync(repoPath)) {
+    throw new Error(`Repository not found: ${safeRepoName}`);
+  }
+
+  return repoPath;
+};
+
+const assertSafeBranchName = (branchName) => {
+  const name = typeof branchName === "string" ? branchName.trim() : "";
+  if (!name) throw new Error("branchName is required");
+  // Prevent traversal patterns; allow slashes for feature branches
+  if (name.includes("..") || name.includes("\\\\")) {
+    throw new Error("Invalid branchName");
+  }
+  if (!/^[a-zA-Z0-9._\/-]+$/.test(name)) {
+    throw new Error("Invalid branchName");
+  }
+  return name;
+};
+
+export const initRepository = async (repoName) => {
+  const safeRepoName = assertSafeRepoName(repoName);
+  const repoPath = path.join(baseRepoPath, safeRepoName);
 
   if (!fs.existsSync(repoPath)) {
     fs.mkdirSync(repoPath, { recursive: true });
@@ -20,22 +54,34 @@ export const initRepository = async (repoName) => {
   return repoPath;
 };
 
-export const commitFiles = async (repoName, message) => {
+export const ensureRepoExists = (repoName) => getRepoPath(repoName, true);
 
-  const repoPath = path.join(baseRepoPath, repoName);
+export const commitFiles = async (repoName, message) => {
+  const safeMessage =
+    typeof message === "string" && message.trim().length > 0
+      ? message.trim()
+      : null;
+
+  if (!safeMessage) {
+    throw new Error("Commit message is required");
+  }
+  if (safeMessage.length > 200) {
+    throw new Error("Commit message is too long (max 200 chars)");
+  }
+
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
   await git.add("./*");
 
-  const commit = await git.commit(message);
+  const commit = await git.commit(safeMessage);
 
   return commit;
 };
 
 export const getCommitHistory = async (repoName) => {
-
-  const repoPath = path.join(baseRepoPath, repoName);
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
@@ -45,30 +91,30 @@ export const getCommitHistory = async (repoName) => {
 };
 
 export const createBranch = async (repoName, branchName) => {
-
-  const repoPath = path.join(baseRepoPath, repoName);
+  const safeBranchName = assertSafeBranchName(branchName);
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
-  await git.branch([branchName]);
+  await git.branch([safeBranchName]);
 
   return { message: "Branch created" };
 };
 
 export const switchBranch = async (repoName, branchName) => {
-
-  const repoPath = path.join(baseRepoPath, repoName);
+  const safeBranchName = assertSafeBranchName(branchName);
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
-  await git.checkout(branchName);
+  await git.checkout(safeBranchName);
 
   return { message: "Switched branch" };
 };
 
 export const mergeBranch = async (repoName, branchName) => {
-
-  const repoPath = `repos/${repoName}`;
+  const safeBranchName = assertSafeBranchName(branchName);
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
@@ -78,7 +124,7 @@ export const mergeBranch = async (repoName, branchName) => {
     throw new Error("Merge conflict detected");
   }
 
-  const result = await git.merge([branchName]);
+  const result = await git.merge([safeBranchName]);
 
   return result;
 
@@ -92,20 +138,21 @@ export const generateDiff = (oldContent, newContent) => {
 };
 
 export const getBranchDiff = async (repoName, sourceBranch, targetBranch) => {
-
-  const repoPath = `repos/${repoName}`;
+  const safeSourceBranch = assertSafeBranchName(sourceBranch);
+  const safeTargetBranch = assertSafeBranchName(targetBranch);
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
   const base = await git.raw([
     "merge-base",
-    targetBranch,
-    sourceBranch
+    safeTargetBranch,
+    safeSourceBranch
   ]);
 
   const diff = await git.raw([
     "diff",
-    `${base.trim()}..${sourceBranch}`
+    `${base.trim()}..${safeSourceBranch}`
   ]);
 
   return diff;
@@ -116,14 +163,13 @@ export const mergePR = async (req, res) => {
 
   const { repoName, sourceBranch } = req.body;
 
-  const result = await gitService.mergeBranch(repoName, sourceBranch);
+  const result = await mergeBranch(repoName, sourceBranch);
 
   res.json(result);
 };
 
 export const getBranches = async (repoName) => {
-
-  const repoPath = `repos/${repoName}`;
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
@@ -134,8 +180,7 @@ export const getBranches = async (repoName) => {
 };
 
 export const getCommitGraph = async (repoName) => {
-
-  const repoPath = `repos/${repoName}`;
+  const repoPath = getRepoPath(repoName, true);
 
   const git = simpleGit(repoPath);
 
